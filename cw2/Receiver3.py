@@ -21,6 +21,7 @@ expected_seq = 0
 while not eof:
     packet, source_address = socket.recvfrom(PACKET_SIZE)
     seq = int.from_bytes(packet[:HEADER_SIZE - 1], 'big')
+    print()
     if expected_seq == seq:
         payload = packet[HEADER_SIZE:]
         eof = packet[HEADER_SIZE - 1]

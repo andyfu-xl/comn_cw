@@ -15,6 +15,7 @@ destination = (remote_host, port)
 
 # setting up the socket
 socket_sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+socket_sender.settimeout(0.0)
 # reading the file and convert into bytearray
 file_data = bytearray(filename.read())
 # initializing the sequence number, remaining bytes, pkt and is_ack
@@ -47,7 +48,6 @@ while remaining_bytes / PAYLOAD_SIZE > 1:
     # resend if timeout
     while (time.time() - timer) < (retry_timeout / 1000):
         try:
-            socket_sender.settimeout(retry_timeout / 1000)
             ack, address = socket_sender.recvfrom(2)
             ack_seq = int.from_bytes(ack[:2], "big")
             # is_ack == 1 means retransmission is required
@@ -79,7 +79,6 @@ while True:
     socket_sender.sendto(last_pkt, destination)
     while (time.time() - timer) < (retry_timeout / 1000):
         try:
-            socket_sender.settimeout(retry_timeout / 1000)
             ack, address = socket_sender.recvfrom(2)
             ack_seq = int.from_bytes(ack[:2], "big")
             # is_ack == 1 means retransmission is required
