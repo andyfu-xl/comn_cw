@@ -44,9 +44,10 @@ while remaining_bytes / PAYLOAD_SIZE > 1:
     # speed up the retransmission by avoid remake of the packet
     else:
         socket_sender.sendto(pkt, destination)
+    # resend if timeout
     while (time.time() - timer) < (retry_timeout / 1000):
         try:
-            socket_sender.settimeout(retry_timeout / 10000)
+            socket_sender.settimeout(retry_timeout / 1000)
             ack, address = socket_sender.recvfrom(2)
             ack_seq = int.from_bytes(ack[:2], "big")
             # is_ack == 1 means retransmission is required
@@ -78,7 +79,7 @@ while True:
     socket_sender.sendto(last_pkt, destination)
     while (time.time() - timer) < (retry_timeout / 1000):
         try:
-            socket_sender.settimeout(retry_timeout / 10000)
+            socket_sender.settimeout(retry_timeout / 1000)
             ack, address = socket_sender.recvfrom(2)
             ack_seq = int.from_bytes(ack[:2], "big")
             # is_ack == 1 means retransmission is required

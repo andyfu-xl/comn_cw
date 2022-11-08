@@ -3,13 +3,14 @@ import sys
 
 PACKET_SIZE = 1027
 HEADER_SIZE = 3
+IP = "127.0.0.1"
 # parsing system arguments
 port = int(sys.argv[1])
 filename = sys.argv[2]
 
 # setting up the socket
 socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-socket.bind((filename, port))
+socket.bind((IP, port))
 
 # initializing eof, 0 means there will be consecutive packet
 eof = 0
@@ -18,22 +19,29 @@ data_received = bytearray()
 expected_seq = 0
 
 while not eof:
-    packet, _ = socket.recvfrom(1027)
-    seq = int.from_bytes(packet[:2], 'big')
+    packet, source_address = socket.recvfrom(PACKET_SIZE)
+    seq = int.from_bytes(packet[:HEADER_SIZE - 1], 'big')
     if expected_seq == seq:
-        payload = packet[3:]
-        eof = packet[2]
+        payload = packet[HEADER_SIZE:]
+        eof = packet[HEADER_SIZE - 1]
         # append payload
         data_received[len(data_received):] = payload
         # send ack back indicates received
-        pkt_ack = bytearray(seq.to_bytes(2, 'big'))
-        socket.sendto(pkt_ack, source)
+        pkt_ack = bytearray(seq.to_bytes(HEADER_SIZE - 1, 'big'))
+        socket.sendto(pkt_ack, source_address)
+        if eof:
+            for i in range(9):
+                socket.sendto(pkt_ack, source_address)
         expected_seq += 1
-    # close the socket when no packet will arrive
-    if not eof:
-        socket.close()
+    elif expected_seq == 0:
+        continue
+    else:
+        pkt = bytearray((expected_seq - 1).to_bytes(2, byteorder='big'))
+        socket.sendto(pkt, source_address)
+
+
+socket.close()
 
 # storing received data into the file
 with open(filename, 'wb') as f:
     f.write(data_received)
-

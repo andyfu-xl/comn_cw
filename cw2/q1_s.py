@@ -47,7 +47,7 @@ def send(timeout):
             socket_sender.sendto(pkt, destination)
         while (time.time() - timer) < (retry_timeout / 1000):
             try:
-                socket_sender.settimeout(retry_timeout / 10000)
+                socket_sender.settimeout(retry_timeout / 1000)
                 ack, address = socket_sender.recvfrom(2)
                 ack_seq = int.from_bytes(ack[:2], "big")
                 # is_ack == 1 means retransmission is required
@@ -79,7 +79,7 @@ def send(timeout):
         socket_sender.sendto(last_pkt, destination)
         while (time.time() - timer) < (retry_timeout / 1000):
             try:
-                socket_sender.settimeout(retry_timeout / 10000)
+                socket_sender.settimeout(retry_timeout / 1000)
                 ack, address = socket_sender.recvfrom(2)
                 ack_seq = int.from_bytes(ack[:2], "big")
                 # is_ack == 1 means retransmission is required
