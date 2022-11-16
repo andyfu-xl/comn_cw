@@ -18,7 +18,6 @@ def receive():
     # initializing data_received and seq
     data_received = bytearray()
     expected_seq = 0
-
     while not eof:
         packet, source_address = socket.recvfrom(PACKET_SIZE)
         seq = int.from_bytes(packet[:HEADER_SIZE - 1], 'big')
